@@ -273,10 +273,13 @@
         const tbody = document.getElementById('leadsTableBody');
         tbody.innerHTML = '';
 
-        // Konwersja obiektu Firebase na tablicę, żeby zachować kolejność Lp.
-        const leadsArray = Object.keys(leadsData).map(key => {
+        // Konwersja obiektu Firebase na tablicę
+        let leadsArray = Object.keys(leadsData).map(key => {
             return { key: key, ...leadsData[key] };
         });
+
+        // NOWOŚĆ: Sortowanie tablicy od najnowszego (najwyższy timestamp) do najstarszego
+        leadsArray.sort((a, b) => b.timestamp - a.timestamp);
 
         if (leadsArray.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #6b7280;">Brak leadów. Dodaj kogoś powyżej!</td></tr>';
