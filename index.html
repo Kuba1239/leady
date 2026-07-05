@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Zarządzania Leadami</title>
+    <title>Panel Zarządzania Leadami - CHMURA</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+
     <style>
         :root {
             --bg-color: #f3f4f6;
@@ -33,7 +37,7 @@
             background: var(--card-bg);
             padding: 30px 40px;
             border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
         }
 
         h1 {
@@ -41,8 +45,19 @@
             color: #111827;
             font-size: 28px;
             font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .online-status {
+            text-align: center;
+            color: #10b981;
+            font-size: 13px;
+            font-weight: 600;
             margin-bottom: 30px;
-            letter-spacing: -0.5px;
+        }
+
+        .online-status::before {
+            content: "● ";
         }
 
         h2 {
@@ -55,244 +70,70 @@
             border-bottom: 1px solid var(--border-color);
         }
 
-        /* Sekcja Skryptu */
-        .script-section {
-            background: #f8fafc;
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            margin-bottom: 30px;
-        }
-
-        .script-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .script-header h2 {
-            margin: 0;
-            border: none;
-            padding: 0;
-            color: #374151;
-            font-size: 16px;
-        }
+        .script-section { background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 30px; }
+        .script-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .script-header h2 { margin: 0; border: none; padding: 0; color: #374151; font-size: 16px; }
 
         textarea {
-            width: 100%;
-            height: 120px;
-            padding: 12px 16px;
-            font-size: 14px;
-            font-family: 'Inter', sans-serif;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            outline: none;
-            resize: vertical;
-            box-sizing: border-box;
-            background: #fff;
-            color: #374151;
-            line-height: 1.5;
-            transition: all 0.2s ease;
+            width: 100%; height: 120px; padding: 12px 16px; font-size: 14px;
+            font-family: 'Inter', sans-serif; border: 1px solid var(--border-color);
+            border-radius: 8px; outline: none; resize: vertical; box-sizing: border-box;
         }
+        textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
 
-        textarea:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-        }
+        .btn-copy { background-color: white; border: 1px solid var(--border-color); padding: 6px 14px; font-size: 13px; border-radius: 6px; cursor: pointer; font-weight: 500; }
+        .btn-copy:hover { background-color: #f3f4f6; }
 
-        .btn-copy {
-            background-color: white;
-            color: #374151;
-            border: 1px solid var(--border-color);
-            padding: 6px 14px;
-            font-size: 13px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
+        .form-group { display: flex; gap: 12px; margin-bottom: 30px; justify-content: center; background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); flex-wrap: wrap; }
+        input { padding: 12px 16px; font-size: 15px; font-family: 'Inter', sans-serif; border: 1px solid var(--border-color); border-radius: 8px; outline: none; width: 250px; }
+        input:focus { border-color: var(--primary); }
 
-        .btn-copy:hover {
-            background-color: #f3f4f6;
-            border-color: #d1d5db;
-        }
+        .btn-add { padding: 12px 24px; font-size: 15px; border: none; border-radius: 8px; cursor: pointer; background-color: var(--primary); color: white; }
+        .btn-add:hover { background-color: var(--primary-hover); }
 
-        /* Sekcja formularza (Dodawanie Leada) */
-        .form-group {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 30px;
-            justify-content: center;
-            background: #f8fafc;
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-        }
-
-        input {
-            padding: 12px 16px;
-            font-size: 15px;
-            font-family: 'Inter', sans-serif;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            outline: none;
-            transition: all 0.2s ease;
-            width: 250px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        }
-
-        input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-        }
-
-        button {
-            font-family: 'Inter', sans-serif;
-            font-weight: 500;
-            outline: none;
-        }
-
-        .btn-add {
-            padding: 12px 24px;
-            font-size: 15px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            background-color: var(--primary);
-            color: white;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
-        }
-
-        .btn-add:hover {
-            background-color: var(--primary-hover);
-            transform: translateY(-1px);
-        }
-
-        /* Tabela */
-        table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            margin-top: 10px;
-        }
-
-        th, td {
-            padding: 16px 12px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-            vertical-align: middle;
-        }
-
-        th {
-            background-color: #f9fafb;
-            color: var(--text-muted);
-            font-weight: 600;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        th:first-child { border-top-left-radius: 8px; }
-        th:last-child { border-top-right-radius: 8px; }
-
-        tr:hover td {
-            background-color: #f8fafc;
-        }
-
-        .lp-column {
-            font-weight: 600;
-            color: var(--text-muted);
-            width: 40px;
-            text-align: center;
-        }
-
-        /* Link do dzwonienia */
-        .phone-link {
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--primary);
-            text-decoration: none;
-            background: #eff6ff;
-            padding: 6px 12px;
-            border-radius: 6px;
-            display: inline-block;
-            transition: all 0.2s ease;
-        }
-
-        .phone-link:hover {
-            background: #dbeafe;
-            color: var(--primary-hover);
-            transform: scale(1.02);
-        }
-
-        /* Obecny Status */
-        .current-status {
-            font-weight: 600;
-            padding: 6px 12px;
-            border-radius: 9999px;
-            display: inline-block;
-            font-size: 13px;
-            text-align: center;
-            min-width: 90px;
-        }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 10px; }
+        th, td { padding: 16px 12px; text-align: left; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+        th { background-color: #f9fafb; color: var(--text-muted); font-size: 13px; text-transform: uppercase; }
         
+        .lp-column { font-weight: 600; color: var(--text-muted); width: 40px; text-align: center; }
+        .phone-link { font-size: 15px; font-weight: 600; color: var(--primary); text-decoration: none; background: #eff6ff; padding: 6px 12px; border-radius: 6px; display: inline-block; }
+        
+        .current-status { font-weight: 600; padding: 6px 12px; border-radius: 9999px; font-size: 13px; text-align: center; min-width: 90px; display: inline-block; }
         .status-nowy { background-color: #f3f4f6; color: #4b5563; }
         .status-chetny { background-color: #dcfce7; color: #166534; }
         .status-niechetny { background-color: #fee2e2; color: #991b1b; }
         .status-zastanowi { background-color: #fef9c3; color: #854d0e; }
 
-        /* Przyciski zmiany statusu */
-        .btn-status {
-            font-size: 12px;
-            margin-right: 4px;
-            padding: 6px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            background: white;
-            border: 1px solid var(--border-color);
-            color: #374151;
-            transition: all 0.2s ease;
-        }
+        .btn-status { font-size: 12px; margin-right: 4px; padding: 6px 10px; border-radius: 6px; cursor: pointer; background: white; border: 1px solid var(--border-color); margin-bottom: 4px; }
+        .btn-status.status-chetny:hover { border-color: #22c55e; background-color: #dcfce7; }
+        .btn-status.status-niechetny:hover { border-color: #ef4444; background-color: #fee2e2; }
+        .btn-status.status-zastanowi:hover { border-color: #eab308; background-color: #fef9c3; }
 
-        .btn-status.status-chetny:hover { border-color: #22c55e; color: #166534; background-color: #dcfce7; }
-        .btn-status.status-niechetny:hover { border-color: #ef4444; color: #991b1b; background-color: #fee2e2; }
-        .btn-status.status-zastanowi:hover { border-color: #eab308; color: #854d0e; background-color: #fef9c3; }
+        .btn-delete { background-color: transparent; color: var(--danger); border: 1px solid #fca5a5; padding: 6px 12px; font-size: 13px; border-radius: 6px; cursor: pointer; }
+        .btn-delete:hover { background-color: #fee2e2; }
 
-        /* Przycisk Usuń */
-        .btn-delete {
-            background-color: transparent;
-            color: var(--danger);
-            border: 1px solid #fca5a5;
-            padding: 6px 12px;
-            font-size: 13px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn-delete:hover {
-            background-color: #fee2e2;
-            border-color: var(--danger);
+        /* Poprawka dla małych ekranów (telefonów) */
+        @media (max-width: 768px) {
+            .form-group input { width: 100%; }
+            table { display: block; overflow-x: auto; white-space: nowrap; }
+            .container { padding: 15px; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>📞 Panel Klientów - Michał i Kuba</h1>
+    <h1>📞 Panel Dzwonienia - Michał i Kuba</h1>
+    <div class="online-status">Działamy na pełnej, spełniamy marzenia! Dajemy z siebie 100%!</div>
     
-    <!-- NOWOŚĆ: Sekcja Skryptu -->
     <div class="script-section">
         <div class="script-header">
-            <h2>📝 Skrypt rozmowy</h2>
+            <h2>📝 Skrypt rozmowy - PORADNIKI CO MÓWIĆ</h2>
             <button class="btn-copy" onclick="copyScript()">Kopiuj skrypt</button>
         </div>
-        <textarea id="callScript" placeholder="Wklej tutaj swój skrypt rozmowy... Tekst zapisuje się automatycznie." oninput="saveScript()"></textarea>
+        <textarea id="callScript" placeholder="" onchange="saveScript()"></textarea>
     </div>
     
-    <!-- Formularz dodawania leada -->
     <div class="form-group">
         <input type="text" id="leadName" placeholder="Imię klienta (opcjonalnie)">
         <input type="tel" id="leadPhone" placeholder="Numer telefonu *" required>
@@ -312,34 +153,57 @@
             </tr>
         </thead>
         <tbody id="leadsTableBody">
-            <!-- Tutaj będą pojawiać się leady -->
+            <tr><td colspan="6" style="text-align: center;">Ładowanie danych z bazy...</td></tr>
         </tbody>
     </table>
 </div>
 
 <script>
-    // --- OBSŁUGA SKRYPTU ROZMOWY ---
-    const scriptTextarea = document.getElementById('callScript');
-    
-    // Wczytaj zapisany skrypt z pamięci przy starcie strony
-    scriptTextarea.value = localStorage.getItem('callScript') || '';
+    // ==========================================
+    // TWOJA KONFIGURACJA FIREBASE
+    // ==========================================
+    const firebaseConfig = {
+        apiKey: "AIzaSyBu-osks82ZCu_jmBsdsYPRdTpZr7duzwo",
+        authDomain: "leady-c06a4.firebaseapp.com",
+        databaseURL: "https://leady-c06a4-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "leady-c06a4",
+        storageBucket: "leady-c06a4.firebasestorage.app",
+        messagingSenderId: "163757934558",
+        appId: "1:163757934558:web:a561fa59462074a31b3f4f"
+    };
 
-    // Funkcja zapisująca skrypt przy każdym naciśnięciu klawisza
+    // Inicjalizacja Bazy Danych
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // ==========================================
+    // LOGIKA APLIKACJI
+    // ==========================================
+    
+    const scriptTextarea = document.getElementById('callScript');
+    let leadsData = {};
+
+    // 1. Odbieranie skryptu z bazy (na żywo)
+    db.ref('script').on('value', (snapshot) => {
+        const cloudScript = snapshot.val() || '';
+        // Aktualizujemy textarea tylko jeśli akurat w nim nie piszemy (żeby nie przerywało)
+        if (document.activeElement !== scriptTextarea) {
+            scriptTextarea.value = cloudScript;
+        }
+    });
+
+    // Zapisywanie skryptu do bazy (gdy odklikniemy myszką / palcem poza pole)
     function saveScript() {
-        localStorage.setItem('callScript', scriptTextarea.value);
+        db.ref('script').set(scriptTextarea.value);
     }
 
-    // Funkcja kopiująca skrypt do schowka
+    // Kopiowanie skryptu
     function copyScript() {
-        if (!scriptTextarea.value.trim()) {
-            alert('Skrypt jest pusty!');
-            return;
-        }
-        
+        if (!scriptTextarea.value.trim()) { alert('Skrypt jest pusty!'); return; }
         scriptTextarea.select();
-        scriptTextarea.setSelectionRange(0, 99999); // Dla urządzeń mobilnych
-        
+        scriptTextarea.setSelectionRange(0, 99999);
         navigator.clipboard.writeText(scriptTextarea.value).then(() => {
+            
             const copyBtn = document.querySelector('.btn-copy');
             const originalText = copyBtn.innerText;
             
@@ -354,14 +218,19 @@
                 copyBtn.style.borderColor = '';
                 copyBtn.style.backgroundColor = '';
             }, 2000);
+
         }).catch(err => {
             alert('Nie udało się skopiować skryptu.');
         });
     }
 
-    // --- OBSŁUGA LEADÓW ---
-    let leads = JSON.parse(localStorage.getItem('leads')) || [];
+    // 2. Odbieranie leadów z bazy (na żywo)
+    db.ref('leads').on('value', (snapshot) => {
+        leadsData = snapshot.val() || {};
+        renderTable();
+    });
 
+    // Dodawanie leada (wysyłka do chmury)
     function addLead() {
         const nameInput = document.getElementById('leadName');
         const phoneInput = document.getElementById('leadPhone');
@@ -371,43 +240,50 @@
             return;
         }
 
-        const newLead = {
+        // Firebase automatycznie wygeneruje unikalny klucz dla każdego leada
+        db.ref('leads').push({
             name: nameInput.value.trim() || 'Nieznany',
             phone: phoneInput.value.trim(),
             status: 'Nowy',
-            statusClass: 'status-nowy'
-        };
-
-        leads.push(newLead);
-        saveAndRender();
+            statusClass: 'status-nowy',
+            timestamp: Date.now() // Do sortowania
+        });
         
         nameInput.value = '';
         phoneInput.value = '';
     }
 
-    function changeStatus(index, newStatus, cssClass) {
-        leads[index].status = newStatus;
-        leads[index].statusClass = cssClass;
-        saveAndRender();
+    // Zmiana statusu (aktualizacja w chmurze)
+    function changeStatus(firebaseKey, newStatus, cssClass) {
+        db.ref('leads/' + firebaseKey).update({
+            status: newStatus,
+            statusClass: cssClass
+        });
     }
 
-    function deleteLead(index) {
-        if(confirm('Czy na pewno chcesz usunąć ten kontakt?')) {
-            leads.splice(index, 1);
-            saveAndRender();
+    // Usuwanie leada (usunięcie z chmury)
+    function deleteLead(firebaseKey) {
+        if(confirm('Czy na pewno chcesz usunąć ten kontakt? Operacja usunie go z każdego urządzenia.')) {
+            db.ref('leads/' + firebaseKey).remove();
         }
     }
 
-    function saveAndRender() {
-        localStorage.setItem('leads', JSON.stringify(leads));
-        renderTable();
-    }
-
+    // Rysowanie tabeli
     function renderTable() {
         const tbody = document.getElementById('leadsTableBody');
         tbody.innerHTML = '';
 
-        leads.forEach((lead, index) => {
+        // Konwersja obiektu Firebase na tablicę, żeby zachować kolejność Lp.
+        const leadsArray = Object.keys(leadsData).map(key => {
+            return { key: key, ...leadsData[key] };
+        });
+
+        if (leadsArray.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #6b7280;">Brak leadów. Dodaj kogoś powyżej!</td></tr>';
+            return;
+        }
+
+        leadsArray.forEach((lead, index) => {
             const tr = document.createElement('tr');
             
             tr.innerHTML = `
@@ -416,20 +292,17 @@
                 <td><a href="tel:${lead.phone}" class="phone-link">${lead.phone}</a></td>
                 <td><span class="current-status ${lead.statusClass}">${lead.status}</span></td>
                 <td>
-                    <button class="btn-status status-chetny" onclick="changeStatus(${index}, 'Chętny', 'status-chetny')">Chętny</button>
-                    <button class="btn-status status-niechetny" onclick="changeStatus(${index}, 'Nie chętny', 'status-niechetny')">Nie chętny</button>
-                    <button class="btn-status status-zastanowi" onclick="changeStatus(${index}, 'Zastanowi się', 'status-zastanowi')">Zastanowi się</button>
+                    <button class="btn-status status-chetny" onclick="changeStatus('${lead.key}', 'Chętny', 'status-chetny')">Chętny</button>
+                    <button class="btn-status status-niechetny" onclick="changeStatus('${lead.key}', 'Nie chętny', 'status-niechetny')">Nie chętny</button>
+                    <button class="btn-status status-zastanowi" onclick="changeStatus('${lead.key}', 'Zastanowi się', 'status-zastanowi')">Zastanowi się</button>
                 </td>
                 <td>
-                    <button class="btn-delete" onclick="deleteLead(${index})">Usuń</button>
+                    <button class="btn-delete" onclick="deleteLead('${lead.key}')">Usuń</button>
                 </td>
             `;
             tbody.appendChild(tr);
         });
     }
-
-    // Wywołanie renderowania po załadowaniu strony
-    renderTable();
 </script>
 
 </body>
